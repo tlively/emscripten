@@ -3692,13 +3692,15 @@ int main()
   def test_llvm_lit(self):
     grep_path = Building.which('grep')
     if not grep_path:
-      self.skipTest('Skipping other.test_llvm_lit: This test needs the "grep" tool in PATH. If you are using emsdk on Windows, you can obtain it via installing and activating the gnu package.')
+      self.skipTest('This test needs the "grep" tool in PATH. If you are using emsdk on Windows, you can obtain it via installing and activating the gnu package.')
     llvm_src = shared.get_fastcomp_src_dir()
+    if not llvm_src:
+      self.skipTest('llvm source tree not found')
     LLVM_LIT = os.path.join(LLVM_ROOT, 'llvm-lit.py')
     if not os.path.exists(LLVM_LIT):
       LLVM_LIT = os.path.join(LLVM_ROOT, 'llvm-lit')
       if not os.path.exists(LLVM_LIT):
-        raise Exception('cannot find llvm-lit tool')
+        self.skipTest('llvm-lit not found; fastcomp directory is most likely prebuilt')
     cmd = [PYTHON, LLVM_LIT, '-v', os.path.join(llvm_src, 'test', 'CodeGen', 'JS')]
     print(cmd)
     run_process(cmd)
