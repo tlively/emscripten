@@ -407,24 +407,6 @@ def check_llvm_version():
     logging.critical('Could not verify LLVM version: %s' % str(e))
 
 
-# look for emscripten-version.txt files under or alongside the llvm source dir
-def get_fastcomp_src_dir():
-  d = LLVM_ROOT
-  emroot = path_from_root() # already abspath
-  # look for version file in llvm repo, making sure not to mistake the emscripten repo for it
-  while d != os.path.dirname(d):
-    d = os.path.abspath(d)
-    # when the build directory lives below the source directory
-    if os.path.exists(os.path.join(d, 'emscripten-version.txt')) and not d == emroot:
-      return d
-    # when the build directory lives alongside the source directory
-    elif os.path.exists(os.path.join(d, 'src', 'emscripten-version.txt')) and not os.path.join(d, 'src') == emroot:
-      return os.path.join(d, 'src')
-    else:
-      d = os.path.dirname(d)
-  return None
-
-
 def get_llc_targets():
   try:
     llc_version_info = run_process([LLVM_COMPILER, '--version'], stdout=PIPE).stdout
@@ -462,31 +444,11 @@ def check_fastcomp():
         return False
 
     if not Settings.WASM_BACKEND:
-      # check repo versions
-      d = get_fastcomp_src_dir()
-      shown_repo_version_error = False
-      if d is not None:
-        llvm_version = get_emscripten_version(os.path.join(d, 'emscripten-version.txt'))
-        if os.path.exists(os.path.join(d, 'tools', 'clang', 'emscripten-version.txt')):
-          clang_version = get_emscripten_version(os.path.join(d, 'tools', 'clang', 'emscripten-version.txt'))
-        elif os.path.exists(os.path.join(d, 'tools', 'clang')):
-          clang_version = '?' # Looks like the LLVM compiler tree has an old checkout from the time before it contained a version.txt: Should update!
-        else:
-          clang_version = llvm_version # This LLVM compiler tree does not have a tools/clang, so it's probably an out-of-source build directory. No need for separate versioning.
-        if EMSCRIPTEN_VERSION != llvm_version or EMSCRIPTEN_VERSION != clang_version:
-          logging.error('Emscripten, llvm and clang repo versions do not match, this is dangerous (%s, %s, %s)', EMSCRIPTEN_VERSION, llvm_version, clang_version)
-          logging.error('Make sure to use the same branch in each repo, and to be up-to-date on each. See http://kripken.github.io/emscripten-site/docs/building_from_source/LLVM-Backend.html')
-          shown_repo_version_error = True
-      else:
-        logging.warning('did not see a source tree above or next to the LLVM root directory (guessing based on directory of %s), could not verify version numbers match' % LLVM_COMPILER)
-
-      # check build versions. don't show it if the repos are wrong, user should fix that first
-      if not shown_repo_version_error:
-        clang_v = run_process([CLANG, '--version'], stdout=PIPE).stdout
-        llvm_build_version, clang_build_version = clang_v.split('(emscripten ')[1].split(')')[0].split(' : ')
-        if EMSCRIPTEN_VERSION != llvm_build_version or EMSCRIPTEN_VERSION != clang_build_version:
-          logging.error('Emscripten, llvm and clang build versions do not match, this is dangerous (%s, %s, %s)', EMSCRIPTEN_VERSION, llvm_build_version, clang_build_version)
-          logging.error('Make sure to rebuild llvm and clang after updating repos')
+      clang_v = run_process([CLANG, '--version'], stdout=PIPE).stdout
+      llvm_build_version, clang_build_version = clang_v.split('(emscripten ')[1].split(')')[0].split(' : ')
+      if EMSCRIPTEN_VERSION != llvm_build_version or EMSCRIPTEN_VERSION != clang_build_version:
+        logging.error('Emscripten, llvm and clang build versions do not match, this is dangerous (%s, %s, %s)', EMSCRIPTEN_VERSION, llvm_build_version, clang_build_version)
+        logging.error('Make sure to rebuild llvm and clang after updating repos')
 
     return True
   except Exception as e:
