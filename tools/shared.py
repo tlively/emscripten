@@ -424,7 +424,7 @@ def has_wasm_target(targets):
   return 'wasm32' in targets and 'WebAssembly 32-bit' in targets
 
 
-def check_fastcomp():
+def check_llvm():
   targets = get_llc_targets()
   if not Settings.WASM_BACKEND:
     if not has_asm_js_target(targets):
@@ -560,7 +560,7 @@ def check_sanity(force=False):
       logging.critical('Non-fastcomp compiler is no longer available, please use fastcomp or an older version of emscripten')
       sys.exit(1)
 
-    fastcomp_ok = check_fastcomp()
+    llvm_ok = check_llvm()
 
     if os.environ.get('EM_IGNORE_SANITY'):
       logging.info('EM_IGNORE_SANITY set, ignoring sanity checks')
@@ -583,8 +583,8 @@ def check_sanity(force=False):
       except:
         exit_with_error('Cannot find %s, check the paths in %s', PYTHON, EM_CONFIG)
 
-    if not fastcomp_ok:
-      exit_with_error('failing sanity checks due to previous fastcomp failure')
+    if not llvm_ok:
+      exit_with_error('failing sanity checks due to previous llvm failure')
 
     # Sanity check passed!
     with ToolchainProfiler.profile_block('sanity closure compiler'):
