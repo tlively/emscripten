@@ -293,7 +293,7 @@ class sanity(RunnerCore):
     restore_and_set_up()
 
     # Should see js backend during sanity check
-    assert shared.check_fastcomp()
+    self.assertTrue(shared.check_llvm())
     output = self.check_working(EMCC)
     self.assertNotIn(WARNING, output)
     self.assertNotIn(WARNING2, output)
