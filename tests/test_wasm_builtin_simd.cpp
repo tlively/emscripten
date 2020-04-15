@@ -332,6 +332,9 @@ int32_t TESTFN i8x16_any_true(i8x16 vec) {
 int32_t TESTFN i8x16_all_true(i8x16 vec) {
   return __builtin_wasm_all_true_i8x16(vec);
 }
+int32_t TESTFN i8x16_bitmask(i8x16 vec) {
+  return __builtin_wasm_bitmask_i8x16(vec);
+}
 i8x16 TESTFN i8x16_shl(i8x16 vec, int32_t shift) {
   return vec << shift;
 }
@@ -1100,6 +1103,7 @@ int EMSCRIPTEN_KEEPALIVE __attribute__((__optnone__)) main(int argc, char** argv
   expect_eq(i8x16_all_true((i8x16){0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0}), 0);
   expect_eq(i8x16_all_true((i8x16){1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}), 0);
   expect_eq(i8x16_all_true((i8x16){1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}), 1);
+  expect_eq(i8x16_bitmask((i8x16){-1, 0, 1, -128, 127, -127, 0, 128, -1, 0, 1, -128, 127, -127, 0, 128}), 43433);
   expect_vec(
     i8x16_shl((i8x16){0, 1, 2, 4, 8, 16, 32, 64, -128, 3, 6, 12, 24, 48, 96, -64}, 1),
     ((i8x16){0, 2, 4, 8, 16, 32, 64, -128, 0, 6, 12, 24, 48, 96, -64, -128})
